@@ -1,0 +1,25 @@
+server:
+  port: 8091
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://124.70.211.159:3306/rabbitmq?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password: mysql8@123
+  rabbitmq:
+    publisher-confirm-type: correlated # 开启确认模式
+    # 开启publisher-confirm，且选择correlated：【异步】回调，定义ConfirmCallback，MQ返回结果时会回调这个ConfirmCallback
+    publisher-returns: true # 开启publish-return功能  开启回退模式
+    template:
+      mandatory: true # 定义当消息从交换机路由到队列失败时的策略。【true，则调用ReturnCallback；false：则直接丢弃消息】
+    host: 1.95.86.68
+    virtual-host: vHost1
+    port: 5672
+    username: testMq
+    password: testMq
+logging:
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  level:
+    com.zy: debug
+

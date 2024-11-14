@@ -1,0 +1,44 @@
+server:
+  port: 8090
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://124.70.211.159:3306/rabbitmq?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password: mysql8@123
+  rabbitmq:
+    publisher-confirm-type: correlated # 开启确认模式
+    # 开启publisher-confirm，且选择correlated：【异步】回调，定义ConfirmCallback，MQ返回结果时会回调这个ConfirmCallback
+    publisher-returns: true # 开启publish-return功能  开启回退模式
+    template:
+      mandatory: true # 定义当消息从交换机路由到队列失败时的策略。【true，则调用ReturnCallback；false：则直接丢弃消息】
+    host: 1.95.86.68
+    virtual-host: vHost1
+    port: 5672
+    username: testMq
+    password: testMq
+    # yml配置文件中配置消息确认模式】：
+    listener:
+      simple:
+        acknowledge-mode: auto  #由spring监测listener代码是否出现异常，没有异常则返回ack；抛出异常则返回nack
+  # 我们可以利用Spring的retry机制，在消费者出现异常时利用本地重试，
+  #而不是无限制的requeue到mq队列（不返回ack，也不返回nack），
+  # 而是可以自己设置重试的次数
+  #（如果在重试n次后仍然失败，那么后面在继续重入队大概率也会失败，那么就直接扔掉，
+  #不再重入队,此时，Spring会返回ack）
+        retry: #  Spring消费者失败重试
+          enabled: true # 【开关】开启消费者失败重试
+          initial-interval: 1000 # 初识的失败等待时长为1秒（第一次失败后1s重试）
+          multiplier: 1 # 失败的等待时长倍数，下次等待时长 = multiplier * last-interval（举例：倍数*第一次等待时长1s，这样子永远都是1s）
+          #但是如果设置为2，下次等待时长为上次的2倍，因此等待时长依次为1、2、4、8、16....
+          max-attempts: 4 # 最大重试次数
+          stateless: true # （默认为true）true无状态；false有状态【如果业务中包含事务，这里改为false】
+          #（备注：如果设置为false，那么Spring在重试的时候保留事务——消耗性能，所以没有事务时设置为true提升性能）
+          max-interval: 10000 # 最大等待时长，大于此时长的一律按最大时长来计算
+
+logging:
+  pattern:
+    dateformat: HH:mm:ss:SSS
+  level:
+    com.zy: debug
+
